@@ -1,0 +1,71 @@
+IO_LOC "sys_clk" 52;
+IO_PORT "sys_clk" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+IO_LOC "sys_resetn" 4;
+IO_PORT "sys_resetn" PULL_MODE=UP;
+IO_LOC "button" 3;
+IO_PORT "button" PULL_MODE=UP;
+
+// UART
+IO_LOC "uart_txp" 17;
+IO_PORT "uart_txp" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8;
+//IO_LOC "UART_RXD" 18;
+//IO_PORT "UART_RXD" IO_TYPE=LVCMOS33 PULL_MODE=UP;
+
+// LED
+IO_LOC "led[5]" 16;
+IO_PORT "led[5]" PULL_MODE=UP DRIVE=8;
+IO_LOC "led[4]" 15;
+IO_PORT "led[4]" PULL_MODE=UP DRIVE=8;
+IO_LOC "led[3]" 14;
+IO_PORT "led[3]" PULL_MODE=UP DRIVE=8;
+IO_LOC "led[2]" 13;
+IO_PORT "led[2]" PULL_MODE=UP DRIVE=8;
+IO_LOC "led[1]" 11;
+IO_PORT "led[1]" PULL_MODE=UP DRIVE=8;
+IO_LOC "led[0]" 10;
+IO_PORT "led[0]" PULL_MODE=UP DRIVE=8;
+
+/*
+IO_LOC "debug[15]" 38       // clk
+IO_PORT "debug[15]" PULL_MODE=UP DRIVE=8;
+IO_LOC "debug[14]" 37       // clk_p
+IO_PORT "debug[14]" PULL_MODE=UP DRIVE=8;
+IO_LOC "debug[13]" 36       // cfg_now
+IO_PORT "debug[13]" PULL_MODE=UP DRIVE=8;
+IO_LOC "debug[12]" 39       // ck
+IO_PORT "debug[12]" PULL_MODE=UP DRIVE=8;
+IO_LOC "debug[11]" 25       // cs_n
+IO_PORT "debug[11]" PULL_MODE=UP DRIVE=8;
+IO_LOC "debug[10]" 26       // state[1]
+IO_PORT "debug[10]" PULL_MODE=UP DRIVE=8;
+IO_LOC "debug[9]" 27        // state[0]
+IO_PORT "debug[9]" PULL_MODE=UP DRIVE=8;
+IO_LOC "debug[8]" 28        // empty
+IO_PORT "debug[8]" PULL_MODE=UP DRIVE=8;
+IO_LOC "debug[7]" 29        // dq[7]
+IO_PORT "debug[7]" PULL_MODE=UP DRIVE=8;
+IO_LOC "debug[6]" 30
+IO_PORT "debug[6]" PULL_MODE=UP DRIVE=8;
+IO_LOC "debug[5]" 33
+IO_PORT "debug[5]" PULL_MODE=UP DRIVE=8;
+IO_LOC "debug[4]" 34
+IO_PORT "debug[4]" PULL_MODE=UP DRIVE=8;
+IO_LOC "debug[3]" 40
+IO_PORT "debug[3]" PULL_MODE=UP DRIVE=8;
+IO_LOC "debug[2]" 35
+IO_PORT "debug[2]" PULL_MODE=UP DRIVE=8;
+IO_LOC "debug[1]" 41
+IO_PORT "debug[1]" PULL_MODE=UP DRIVE=8;
+IO_LOC "debug[0]" 42        // dq[0]
+IO_PORT "debug[0]" PULL_MODE=UP DRIVE=8;
+*/
+
+// HDMI
+//IO_LOC "tmds_d_p[0]" 71,70;
+//IO_PORT "tmds_d_p[0]" PULL_MODE=NONE DRIVE=8;
+//IO_LOC "tmds_d_p[1]" 73,72;
+//IO_PORT "tmds_d_p[1]" PULL_MODE=NONE DRIVE=8;
+//IO_LOC "tmds_d_p[2]" 75,74;
+//IO_PORT "tmds_d_p[2]" PULL_MODE=NONE DRIVE=8;
+//IO_LOC "tmds_clk_p" 69,68;
+//IO_PORT "tmds_clk_p" PULL_MODE=NONE DRIVE=8;
