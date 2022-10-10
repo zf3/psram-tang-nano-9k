@@ -16,7 +16,6 @@ Usage
 * Also read the test bench `psram_test_top.v` for an actual example. It works at 81 Mhz, uses byte-based access, and writes its results to UART at 115200 bps.
 
 See also
-* My [SDRAM controller for Tang 20K](https://github.com/zf3/sdram-tang-primer-20k) if you are working with SDRAM.
 * [An example](https://github.com/zf3/some-tang-nano-9k-examples) using the official Gowin HyperRAM IP. The official IP uses bursting access (writes/reads >= 16 bytes a time). So it is higher throughput, but also higher latency. And it is encrypted verilog. :(
 * [Tang 20K official examples](https://github.com/sipeed/TangPrimer-20K-example), where the UART module comes from.
 
