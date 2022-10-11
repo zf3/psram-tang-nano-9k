@@ -3,11 +3,16 @@
 // Feng Zhou, 2022.8
 //
 // This is a word or byte based, non-bursting controller for accessing the on-chip HyperRAM.
-// - 1:1 clock design. Memory and main logic work under the same clock. 83Mhz max clock frequency. 
-// - Low latency. Write latency is 7 cycles (1x) or 10 cycles (2x). Read latency is 12 cycles (1x) 
-//   or 15 cycles(2x). In my test, 2x latency happens about 0.05% of time.
+// - 1:1 clock design. Memory and main logic work under the same clock.
+// - Low latency. Under default settings, write latency is 7 cycles (1x) or 10 cycles (2x). 
+//   Read latency is 12 cycles (1x) or 15 cycles(2x). In my test, 2x latency happens about 
+//   0.05% of time.
 
-module PsramController(
+module PsramController #(
+    parameter FREQ=81_000_000,// Actual clk frequency, to time 150us initialization delay
+    parameter LATENCY=3       // tACC (Initial Latency) in W955D8MBYA datasheet:
+                              // 3 (max 83Mhz), 4 (max 104Mhz), 5 (max 133Mhz) or 6 (max 166Mhz)
+) (
     input clk,
     input clk_p,              // phase-shifted clock for driving O_psram_ck
     input resetn,
@@ -27,9 +32,6 @@ module PsramController(
     inout [15:0] IO_psram_dq,
     output [1:0] O_psram_cs_n
 );
-
-// Used to time 150us initialization time
-parameter clk_freq = 81_000_000;
 
 reg [2:0] state;
 localparam [2:0] INIT_ST = 3'd0;
@@ -52,8 +54,14 @@ wire [7:0] dq_in_ris;
 wire [7:0] dq_in_fal;
 reg rwds_out_ris, rwds_out_fal, rwds_oen;
 wire rwds_in_ris, rwds_in_fal;
+reg additional_latency;
 
 assign busy = (state != IDLE_ST);
+
+localparam [3:0] CR_LATENCY = LATENCY == 3 ? 4'b1110 :
+                              LATENCY == 4 ? 4'b1111 :
+                              LATENCY == 5 ? 4'b0 :
+                              LATENCY == 6 ? 4'b0001 : 4'b1110;
 
 // Main FSM for HyperRAM read/write
 always @(posedge clk) begin
@@ -68,7 +76,7 @@ always @(posedge clk) begin
     end
     if (state == CONFIG_ST) begin
         if (cycles_sr[0]) begin
-            dq_sr <= {8'h60, 8'h00, 8'h01, 8'h00, 8'h00, 8'h00, 8'h8f, 8'he7};      // last byte, 'e' (3 cycle latency max 83Mhz), '7' (variable 1x/2x latency)
+            dq_sr <= {8'h60, 8'h00, 8'h01, 8'h00, 8'h00, 8'h00, 8'h8f, CR_LATENCY, 4'h7};      // last byte, 'e' (3 cycle latency max 83Mhz), '7' (variable 1x/2x latency)
             dq_oen <= 0;
             ck_e <= 1;      // this needs to be earlier 1 cycle to allow for phase shifted clk_p
         end 
@@ -114,9 +122,15 @@ always @(posedge clk) begin
     end
 
     if (state == WRITE_ST) begin
-        if (cycles_sr[8] || (cycles_sr[5] && !rwds_in_fal)) begin
+        if (cycles_sr[5])
+            additional_latency <= rwds_in_fal;  // sample RWDS to see if we need additional latency
+        // Write timing is trickier - we sample RWDS at cycle 5 to determine whether we need to wait another tACC.
+        // If it is low, data starts at 2+LATENCY. If high, then data starts at 2+LATENCY*2.
+        if (cycles_sr[2+LATENCY] && (LATENCY == 3 ? ~rwds_in_fal : ~additional_latency)
+            || cycles_sr[2+LATENCY*2])
+        begin
             rwds_oen <= 0;
-            rwds_out_ris <= byte_write ? ~addr[0] : 1'b0;
+            rwds_out_ris <= byte_write ? ~addr[0] : 1'b0;       // RWDS is data mask (1 means not writing)
             rwds_out_fal <= byte_write ? addr[0] : 1'b0;
             dq_sr[63:48] <= w_din;
             state <= IDLE_ST;
@@ -135,14 +149,15 @@ end
 //
 // Generate cfg_now pulse after 150us delay
 //
-reg  [14:0]   rst_cnt;
+localparam INIT_TIME = FREQ / 1000 * 160 / 1000;
+reg  [$clog2(INIT_TIME+1):0]   rst_cnt;
 reg rst_done, rst_done_p1, cfg_busy;
   
 always @(posedge clk) begin
     rst_done_p1 <= rst_done;
     cfg_now     <= rst_done & ~rst_done_p1;// Rising Edge Detect
 
-    if (rst_cnt != clk_freq / 1000 * 160 / 1000) begin      // count to 160 us
+    if (rst_cnt != INIT_TIME) begin      // count to 160 us
         rst_cnt  <= rst_cnt[14:0] + 1;
         rst_done <= 0;
         cfg_busy <= 1;
